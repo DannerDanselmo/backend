@@ -1,0 +1,46 @@
+atv 3 backend
+
+main.java
+
+
+public class main {
+    public static void main(String[] args){
+        Fatura dezembro = new Fatura(
+                "1312312",
+                "esta é a sua fatura",
+                12,
+                21.99
+        );
+        System.out.println("numero: " + dezembro.numero);
+        System.out.println("descricao: " + dezembro.descricao);
+        System.out.println("quantidade de itens: " + dezembro.quantidade);
+        System.out.println("preço do item: " + dezembro.precoPorItem);
+
+        System.out.println(dezembro.totalFatura());
+
+
+
+    }
+
+
+}
+
+Fatura.java
+
+public class Fatura {
+    String numero;
+    String descricao;
+    Integer quantidade;
+    Double precoPorItem;
+
+    public Fatura(String numero, String descricao, Integer quantidade, Double precoPorItem) {
+        this.numero = numero;
+        this.descricao = descricao;
+        this.quantidade = quantidade;
+        this.precoPorItem = precoPorItem;
+    }
+    public Double totalFatura(){
+        return this.quantidade * this.precoPorItem;
+    }
+}
+
