@@ -1,0 +1,432 @@
+questão 1
+
+package com.exemplo.recomendador;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class RecomendadorApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(RecomendadorApplication.class, args);
+    }
+}
+
+
+
+package com.exemplo.recomendador.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class RecomendadorController {
+
+    @GetMapping("/recomendar")
+    public String recomendar(
+            @RequestParam String clima,
+            @RequestParam String estilo) {
+
+        if (clima.equalsIgnoreCase("calor") && estilo.equalsIgnoreCase("natureza")) {
+            return "Rio de Janeiro";
+        } else if (clima.equalsIgnoreCase("frio") && estilo.equalsIgnoreCase("montanha")) {
+            return "Gramado";
+        } else if (clima.equalsIgnoreCase("calor") && estilo.equalsIgnoreCase("praia")) {
+            return "Salvador";
+        } else if (clima.equalsIgnoreCase("frio") && estilo.equalsIgnoreCase("cidade")) {
+            return "Curitiba";
+        } else {
+            return "Destino não encontrado, cupixa 😅";
+        }
+    }
+}
+
+
+
+Questão 2 
+
+1. Classe Jogador (model)
+
+package com.exemplo.jogador.model;
+
+public class Jogador {
+
+    private String nome;
+    private String sobrenome;
+    private int idade;
+    private String posicao;
+    private String time;
+
+    public Jogador(String nome, String sobrenome, int idade, String posicao, String time) {
+        this.nome = nome;
+        this.sobrenome = sobrenome;
+        this.idade = idade;
+        this.posicao = posicao;
+        this.time = time;
+    }
+
+    public String getNome() { return nome; }
+    public String getSobrenome() { return sobrenome; }
+    public int getIdade() { return idade; }
+    public String getPosicao() { return posicao; }
+    public String getTime() { return time; }
+}
+
+2. Service (JogadorService)
+
+package com.exemplo.jogador.service;
+
+import com.exemplo.jogador.model.Jogador;
+import org.springframework.stereotype.Service;
+
+import java.util.Random;
+
+@Service
+public class JogadorService {
+
+    private String[] nomes = {"Ronaldo", "Neymar", "Gabriel", "Lucas", "Pedro"};
+    private String[] sobrenomes = {"Silva", "Souza", "Fenômeno", "Oliveira", "Santos"};
+    private String[] posicoes = {"Goleiro", "Zagueiro", "Meio-campo", "Atacante"};
+
+    public Jogador gerarJogador(String time, String posicao) {
+        Random random = new Random();
+
+        String nome = nomes[random.nextInt(nomes.length)];
+        String sobrenome = sobrenomes[random.nextInt(sobrenomes.length)];
+        int idade = 18 + random.nextInt(20); // idade entre 18 e 37
+
+        // usa a posição recebida ou sorteia se vier inválida
+        String posicaoFinal = posicao != null ? posicao : posicoes[random.nextInt(posicoes.length)];
+
+        return new Jogador(
+                nome,
+                sobrenome,
+                idade,
+                posicaoFinal,
+                capitalize(time)
+        );
+    }
+
+    private String capitalize(String texto) {
+        if (texto == null || texto.isEmpty()) return texto;
+        return texto.substring(0,1).toUpperCase() + texto.substring(1).toLowerCase();
+    }
+}
+
+
+3. Controller
+
+package com.exemplo.jogador.controller;
+
+import com.exemplo.jogador.model.Jogador;
+import com.exemplo.jogador.service.JogadorService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/jogador")
+public class JogadorController {
+
+    @Autowired
+    private JogadorService jogadorService;
+
+    @GetMapping("/{time}/{posicao}")
+    public Jogador gerarJogador(
+            @PathVariable String time,
+            @PathVariable String posicao) {
+
+        return jogadorService.gerarJogador(time, posicao);
+    }
+}
+
+
+Questão 3
+
+1. Model (Estudante)
+package com.exemplo.estudantes.model;
+
+public class Estudante {
+
+    private String nome;
+    private int codigo;
+    private String curso;
+    private String email;
+    private String telefone;
+
+    public Estudante() {}
+
+    public Estudante(String nome, int codigo, String curso, String email, String telefone) {
+        this.nome = nome;
+        this.codigo = codigo;
+        this.curso = curso;
+        this.email = email;
+        this.telefone = telefone;
+    }
+
+    public String getNome() { return nome; }
+    public int getCodigo() { return codigo; }
+    public String getCurso() { return curso; }
+    public String getEmail() { return email; }
+    public String getTelefone() { return telefone; }
+
+    public void setNome(String nome) { this.nome = nome; }
+    public void setCodigo(int codigo) { this.codigo = codigo; }
+    public void setCurso(String curso) { this.curso = curso; }
+    public void setEmail(String email) { this.email = email; }
+    public void setTelefone(String telefone) { this.telefone = telefone; }
+}
+
+
+2. Service (memória)
+
+Aqui vamos simular um “banco” usando lista:
+
+package com.exemplo.estudantes.service;
+
+import com.exemplo.estudantes.model.Estudante;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class EstudanteService {
+
+    private List<Estudante> estudantes = new ArrayList<>();
+
+    public Estudante salvar(Estudante estudante) {
+        estudantes.add(estudante);
+        return estudante;
+    }
+
+    public List<Estudante> listarTodos() {
+        return estudantes;
+    }
+
+    public Estudante buscarPorCodigo(int codigo) {
+        return estudantes.stream()
+                .filter(e -> e.getCodigo() == codigo)
+                .findFirst()
+                .orElse(null);
+    }
+}
+
+
+3. Controller
+package com.exemplo.estudantes.controller;
+
+import com.exemplo.estudantes.model.Estudante;
+import com.exemplo.estudantes.service.EstudanteService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/estudantes")
+public class EstudanteController {
+
+    @Autowired
+    private EstudanteService estudanteService;
+
+    // POST → salvar estudante
+    @PostMapping
+    public Estudante salvar(@RequestBody Estudante estudante) {
+        return estudanteService.salvar(estudante);
+    }
+
+    // GET → listar todos
+    @GetMapping
+    public List<Estudante> listarTodos() {
+        return estudanteService.listarTodos();
+    }
+
+    // GET → buscar por código
+    @GetMapping("/{codigo}")
+    public Estudante buscarPorCodigo(@PathVariable int codigo) {
+        return estudanteService.buscarPorCodigo(codigo);
+    }
+}
+
+
+Questão 4
+
+Estrutura
+model/
+service/
+controller/
+
+
+Model: Musica
+package com.exemplo.playlist.model;
+
+public class Musica {
+
+    private int id;
+    private String nome;
+    private String artista;
+    private String album;
+    private int duracao;
+    private String genero;
+
+    public Musica() {}
+
+    public Musica(int id, String nome, String artista, String album, int duracao, String genero) {
+        this.id = id;
+        this.nome = nome;
+        this.artista = artista;
+        this.album = album;
+        this.duracao = duracao;
+        this.genero = genero;
+    }
+
+    public int getId() { return id; }
+    public String getNome() { return nome; }
+    public String getArtista() { return artista; }
+    public String getAlbum() { return album; }
+    public int getDuracao() { return duracao; }
+    public String getGenero() { return genero; }
+
+    public void setId(int id) { this.id = id; }
+    public void setNome(String nome) { this.nome = nome; }
+    public void setArtista(String artista) { this.artista = artista; }
+    public void setAlbum(String album) { this.album = album; }
+    public void setDuracao(int duracao) { this.duracao = duracao; }
+    public void setGenero(String genero) { this.genero = genero; }
+}
+
+
+
+Model: Playlist
+package com.exemplo.playlist.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Playlist {
+
+    private int id;
+    private String nome;
+    private List<Musica> musicas = new ArrayList<>();
+
+    public Playlist() {}
+
+    public Playlist(int id, String nome) {
+        this.id = id;
+        this.nome = nome;
+    }
+
+    public int getId() { return id; }
+    public String getNome() { return nome; }
+    public List<Musica> getMusicas() { return musicas; }
+
+    public void setId(int id) { this.id = id; }
+    public void setNome(String nome) { this.nome = nome; }
+}
+
+
+3. Service
+
+Aqui controlamos tudo em memória:
+
+package com.exemplo.playlist.service;
+
+import com.exemplo.playlist.model.Musica;
+import com.exemplo.playlist.model.Playlist;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Service
+public class PlaylistService {
+
+    private Map<Integer, Playlist> playlists = new HashMap<>();
+    private int contadorPlaylist = 1;
+    private int contadorMusica = 1;
+
+    // Criar playlist
+    public int criarPlaylist(Playlist playlist) {
+        playlist.setId(contadorPlaylist++);
+        playlists.put(playlist.getId(), playlist);
+        return playlist.getId();
+    }
+
+    // Adicionar música
+    public String adicionarMusica(int playlistId, Musica musica) {
+        Playlist playlist = playlists.get(playlistId);
+
+        if (playlist == null) {
+            return "Playlist não encontrada";
+        }
+
+        musica.setId(contadorMusica++);
+        playlist.getMusicas().add(musica);
+
+        return "Música adicionada com sucesso";
+    }
+
+    // Listar playlists
+    public List<Playlist> listarPlaylists() {
+        return new ArrayList<>(playlists.values());
+    }
+
+    // Listar músicas de uma playlist
+    public List<Musica> listarMusicas(int playlistId) {
+        Playlist playlist = playlists.get(playlistId);
+
+        if (playlist == null) {
+            return null;
+        }
+
+        return playlist.getMusicas();
+    }
+}
+
+
+4. Controller
+package com.exemplo.playlist.controller;
+
+import com.exemplo.playlist.model.Musica;
+import com.exemplo.playlist.model.Playlist;
+import com.exemplo.playlist.service.PlaylistService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/playlists")
+public class PlaylistController {
+
+    @Autowired
+    private PlaylistService playlistService;
+
+    // POST → criar playlist
+    @PostMapping
+    public int criarPlaylist(@RequestBody Playlist playlist) {
+        return playlistService.criarPlaylist(playlist);
+    }
+
+    // POST → adicionar música
+    @PostMapping("/{id}/musicas")
+    public String adicionarMusica(
+            @PathVariable int id,
+            @RequestBody Musica musica) {
+
+        return playlistService.adicionarMusica(id, musica);
+    }
+
+    // GET → listar playlists
+    @GetMapping
+    public List<Playlist> listarPlaylists() {
+        return playlistService.listarPlaylists();
+    }
+
+    // GET → músicas de uma playlist
+    @GetMapping("/{id}/musicas")
+    public List<Musica> listarMusicas(@PathVariable int id) {
+        return playlistService.listarMusicas(id);
+    }
+}
