@@ -1,0 +1,760 @@
+Questao 1
+
+public class Jogador {
+    private String nome;
+    private String posicao;
+    private int idade;
+
+    public Jogador(String nome, String posicao, int idade) {
+        this.nome = nome;
+        this.posicao = posicao;
+        this.idade = idade;
+    }
+
+    public String getNome() { return nome; }
+    public String getPosicao() { return posicao; }
+    public int getIdade() { return idade; }
+
+    public void setNome(String nome) { this.nome = nome; }
+    public void setPosicao(String posicao) { this.posicao = posicao; }
+    public void setIdade(int idade) { this.idade = idade; }
+}
+
+
+import org.springframework.stereotype.Service;
+import java.util.*;
+
+@Service
+public class TimeService {
+
+    private List<Jogador> jogadores = new ArrayList<>();
+
+    public TimeService() {
+        inicializar();
+    }
+
+    private void inicializar() {
+        // Titulares (0-10)
+        jogadores.add(new Jogador("Goleiro", "GOL", 30));
+        jogadores.add(new Jogador("Lateral Direito", "LD", 25));
+        jogadores.add(new Jogador("Zagueiro 1", "ZAG", 28));
+        jogadores.add(new Jogador("Zagueiro 2", "ZAG", 27));
+        jogadores.add(new Jogador("Lateral Esquerdo", "LE", 26));
+        jogadores.add(new Jogador("Volante", "VOL", 29));
+        jogadores.add(new Jogador("Meia 1", "MEI", 24));
+        jogadores.add(new Jogador("Meia 2", "MEI", 23));
+        jogadores.add(new Jogador("Ponta Direita", "PD", 22));
+        jogadores.add(new Jogador("Centroavante", "ATA", 31));
+        jogadores.add(new Jogador("Ponta Esquerda", "PE", 21));
+
+        // Reservas (11-15)
+        jogadores.add(new Jogador("Reserva 1", "GOL", 20));
+        jogadores.add(new Jogador("Reserva 2", "DEF", 22));
+        jogadores.add(new Jogador("Reserva 3", "MEI", 23));
+        jogadores.add(new Jogador("Reserva 4", "ATA", 24));
+        jogadores.add(new Jogador("Reserva 5", "ATA", 25));
+    }
+
+    public List<Jogador> getTitulares() {
+        return jogadores.subList(0, 11);
+    }
+
+    public List<Jogador> getReservas() {
+        return jogadores.subList(11, jogadores.size());
+    }
+
+    public String substituirJogador(int posicaoTitular) {
+        if (posicaoTitular < 0 || posicaoTitular > 10) {
+            return "Posição inválida!";
+        }
+
+        if (jogadores.size() <= 11) {
+            return "Sem reservas disponíveis!";
+        }
+
+        // pega o primeiro reserva
+        Jogador reserva = jogadores.get(11);
+
+        // troca
+        Jogador titular = jogadores.get(posicaoTitular);
+        jogadores.set(posicaoTitular, reserva);
+
+        // remove reserva e adiciona o titular ao final da lista
+        jogadores.remove(11);
+        jogadores.add(titular);
+
+        return "Substituição realizada!";
+    }
+}
+
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/")
+public class TimeController {
+
+    private final TimeService service;
+
+    public TimeController(TimeService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/principal")
+    public List<Jogador> listarTitulares() {
+        return service.getTitulares();
+    }
+
+    @GetMapping("/reservas")
+    public List<Jogador> listarReservas() {
+        return service.getReservas();
+    }
+
+    @PutMapping("/jogador/{posicao}")
+    public String substituir(@PathVariable int posicao) {
+        return service.substituirJogador(posicao);
+    }
+}
+
+
+Questão 2 
+
+import java.util.UUID;
+
+public class Livro {
+    private UUID id;
+    private String titulo;
+    private String autor;
+
+    public Livro(String titulo, String autor) {
+        this.id = UUID.randomUUID();
+        this.titulo = titulo;
+        this.autor = autor;
+    }
+
+    public UUID getId() { return id; }
+    public String getTitulo() { return titulo; }
+    public String getAutor() { return autor; }
+}
+
+
+
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public class Emprestimo {
+    private UUID emprestimoId;
+    private UUID livroId;
+    private String usuarioId;
+    private LocalDateTime dataEmprestimo;
+
+    public Emprestimo(UUID livroId, String usuarioId) {
+        this.emprestimoId = UUID.randomUUID();
+        this.livroId = livroId;
+        this.usuarioId = usuarioId;
+        this.dataEmprestimo = LocalDateTime.now();
+    }
+
+    public UUID getEmprestimoId() { return emprestimoId; }
+    public UUID getLivroId() { return livroId; }
+    public String getUsuarioId() { return usuarioId; }
+    public LocalDateTime getDataEmprestimo() { return dataEmprestimo; }
+}
+
+
+
+
+
+
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Service
+public class BibliotecaService {
+
+    private List<Livro> livrosDisponiveis = new ArrayList<>();
+    private List<Emprestimo> emprestimos = new ArrayList<>();
+
+    public BibliotecaService() {
+        inicializar();
+    }
+
+    private void inicializar() {
+        livrosDisponiveis.add(new Livro("Dom Casmurro", "Machado de Assis"));
+        livrosDisponiveis.add(new Livro("1984", "George Orwell"));
+        livrosDisponiveis.add(new Livro("O Hobbit", "J.R.R. Tolkien"));
+        livrosDisponiveis.add(new Livro("Clean Code", "Robert C. Martin"));
+    }
+
+    public List<Livro> getLivrosDisponiveis() {
+        return livrosDisponiveis;
+    }
+
+    public List<Emprestimo> getEmprestimos() {
+        return emprestimos;
+    }
+
+    public String emprestarLivro(UUID livroId, String usuarioId) {
+        Optional<Livro> livroOpt = livrosDisponiveis.stream()
+                .filter(l -> l.getId().equals(livroId))
+                .findFirst();
+
+        if (livroOpt.isEmpty()) {
+            return "Livro não disponível!";
+        }
+
+        Livro livro = livroOpt.get();
+
+        Emprestimo emprestimo = new Emprestimo(livroId, usuarioId);
+
+        emprestimos.add(emprestimo);
+        livrosDisponiveis.remove(livro);
+
+        return "Empréstimo realizado! ID: " + emprestimo.getEmprestimoId();
+    }
+
+    public String devolverLivro(UUID emprestimoId) {
+        Optional<Emprestimo> empOpt = emprestimos.stream()
+                .filter(e -> e.getEmprestimoId().equals(emprestimoId))
+                .findFirst();
+
+        if (empOpt.isEmpty()) {
+            return "Empréstimo não encontrado!";
+        }
+
+        Emprestimo emprestimo = empOpt.get();
+
+        // recria o livro (simples, pois não temos banco)
+        Livro livro = new Livro("Livro devolvido", "Autor desconhecido");
+        
+        // mantém o mesmo ID
+        try {
+            java.lang.reflect.Field field = Livro.class.getDeclaredField("id");
+            field.setAccessible(true);
+            field.set(livro, emprestimo.getLivroId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        livrosDisponiveis.add(livro);
+        emprestimos.remove(emprestimo);
+
+        return "Livro devolvido com sucesso!";
+    }
+}
+
+
+
+
+
+
+import java.util.UUID;
+
+public class EmprestimoRequest {
+    private UUID livroId;
+    private String usuarioId;
+
+    public UUID getLivroId() { return livroId; }
+    public String getUsuarioId() { return usuarioId; }
+}
+
+
+
+
+
+
+
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/")
+public class BibliotecaController {
+
+    private final BibliotecaService service;
+
+    public BibliotecaController(BibliotecaService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/livros")
+    public List<Livro> listarLivros() {
+        return service.getLivrosDisponiveis();
+    }
+
+    @GetMapping("/emprestados")
+    public List<Emprestimo> listarEmprestimos() {
+        return service.getEmprestimos();
+    }
+
+    @PostMapping("/emprestados")
+    public String emprestar(@RequestBody EmprestimoRequest request) {
+        return service.emprestarLivro(request.getLivroId(), request.getUsuarioId());
+    }
+
+    @DeleteMapping("/emprestados/{emprestimoId}")
+    public String devolver(@PathVariable UUID emprestimoId) {
+        return service.devolverLivro(emprestimoId);
+    }
+}
+
+
+Questão 3
+
+
+import java.util.*;
+
+public class Usuario {
+    private UUID id;
+    private String nome;
+    private String email;
+    private List<Tweet> tweets = new ArrayList<>();
+
+    public Usuario(String nome, String email) {
+        this.id = UUID.randomUUID();
+        this.nome = nome;
+        this.email = email;
+    }
+
+    public UUID getId() { return id; }
+    public String getNome() { return nome; }
+    public String getEmail() { return email; }
+    public List<Tweet> getTweets() { return tweets; }
+}
+
+
+
+
+
+
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public class Tweet {
+    private UUID tweetId;
+    private String mensagem;
+    private boolean editado;
+    private LocalDateTime dataCriacao;
+
+    public Tweet(String mensagem) {
+        this.tweetId = UUID.randomUUID();
+        this.mensagem = mensagem;
+        this.editado = false;
+        this.dataCriacao = LocalDateTime.now();
+    }
+
+    public UUID getTweetId() { return tweetId; }
+    public String getMensagem() { return mensagem; }
+    public boolean isEditado() { return editado; }
+    public LocalDateTime getDataCriacao() { return dataCriacao; }
+
+    public void setMensagem(String mensagem) {
+        this.mensagem = mensagem;
+        this.editado = true;
+    }
+}
+
+
+
+
+
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Service
+public class RedeSocialService {
+
+    private List<Usuario> usuarios = new ArrayList<>();
+
+    public RedeSocialService() {
+        inicializar();
+    }
+
+    private void inicializar() {
+        usuarios.add(new Usuario("João", "joao@email.com"));
+        usuarios.add(new Usuario("Maria", "maria@email.com"));
+        usuarios.add(new Usuario("Pedro", "pedro@email.com"));
+    }
+
+    public List<Usuario> getUsuarios() {
+        return usuarios;
+    }
+
+    private Optional<Usuario> buscarUsuario(UUID id) {
+        return usuarios.stream()
+                .filter(u -> u.getId().equals(id))
+                .findFirst();
+    }
+
+    public List<Tweet> getTweets(UUID userId) {
+        return buscarUsuario(userId)
+                .map(Usuario::getTweets)
+                .orElse(Collections.emptyList());
+    }
+
+    public String criarTweet(UUID userId, String mensagem) {
+        Optional<Usuario> userOpt = buscarUsuario(userId);
+
+        if (userOpt.isEmpty()) {
+            return "Usuário não encontrado!";
+        }
+
+        Tweet tweet = new Tweet(mensagem);
+        userOpt.get().getTweets().add(tweet);
+
+        return "Tweet criado! ID: " + tweet.getTweetId();
+    }
+
+    public String atualizarTweet(UUID userId, UUID tweetId, String mensagem) {
+        Optional<Usuario> userOpt = buscarUsuario(userId);
+
+        if (userOpt.isEmpty()) {
+            return "Usuário não encontrado!";
+        }
+
+        Optional<Tweet> tweetOpt = userOpt.get().getTweets().stream()
+                .filter(t -> t.getTweetId().equals(tweetId))
+                .findFirst();
+
+        if (tweetOpt.isEmpty()) {
+            return "Tweet não encontrado!";
+        }
+
+        tweetOpt.get().setMensagem(mensagem);
+        return "Tweet atualizado!";
+    }
+
+    public String deletarTweet(UUID userId, UUID tweetId) {
+        Optional<Usuario> userOpt = buscarUsuario(userId);
+
+        if (userOpt.isEmpty()) {
+            return "Usuário não encontrado!";
+        }
+
+        boolean removido = userOpt.get().getTweets()
+                .removeIf(t -> t.getTweetId().equals(tweetId));
+
+        return removido ? "Tweet removido!" : "Tweet não encontrado!";
+    }
+}
+
+
+
+public class TweetRequest {
+    private String mensagem;
+
+    public String getMensagem() {
+        return mensagem;
+    }
+}
+
+
+
+public class AtualizarTweetRequest {
+    private String mensagem;
+
+    public String getMensagem() {
+        return mensagem;
+    }
+}
+
+
+
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/usuarios")
+public class RedeSocialController {
+
+    private final RedeSocialService service;
+
+    public RedeSocialController(RedeSocialService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public List<Usuario> listarUsuarios() {
+        return service.getUsuarios();
+    }
+
+    @GetMapping("/{id}/tweets")
+    public List<Tweet> listarTweets(@PathVariable UUID id) {
+        return service.getTweets(id);
+    }
+
+    @PostMapping("/{id}/tweets")
+    public String criarTweet(@PathVariable UUID id,
+                             @RequestBody TweetRequest request) {
+        return service.criarTweet(id, request.getMensagem());
+    }
+
+    @PatchMapping("/{id}/tweets/{tweetId}")
+    public String atualizarTweet(@PathVariable UUID id,
+                                @PathVariable UUID tweetId,
+                                @RequestBody AtualizarTweetRequest request) {
+        return service.atualizarTweet(id, tweetId, request.getMensagem());
+    }
+
+    @DeleteMapping("/{id}/tweets/{tweetId}")
+    public String deletarTweet(@PathVariable UUID id,
+                              @PathVariable UUID tweetId) {
+        return service.deletarTweet(id, tweetId);
+    }
+}
+
+
+
+Questão 4
+
+
+
+
+import java.util.*;
+
+public class Filme {
+    private UUID id;
+    private String titulo;
+    private String genero;
+    private int capacidade;
+    private int assentosOcupados;
+    private List<Ingresso> ingressos = new ArrayList<>();
+
+    public Filme(String titulo, String genero, int capacidade) {
+        this.id = UUID.randomUUID();
+        this.titulo = titulo;
+        this.genero = genero;
+        this.capacidade = capacidade;
+        this.assentosOcupados = 0;
+    }
+
+    public UUID getId() { return id; }
+    public String getTitulo() { return titulo; }
+    public String getGenero() { return genero; }
+    public int getCapacidade() { return capacidade; }
+    public int getAssentosOcupados() { return assentosOcupados; }
+    public List<Ingresso> getIngressos() { return ingressos; }
+
+    public void setTitulo(String titulo) { this.titulo = titulo; }
+    public void setGenero(String genero) { this.genero = genero; }
+    public void setCapacidade(int capacidade) { this.capacidade = capacidade; }
+
+    public void incrementarAssento() { this.assentosOcupados++; }
+    public void decrementarAssento() { this.assentosOcupados--; }
+}
+
+
+
+
+
+
+import java.util.UUID;
+
+public class Ingresso {
+    private UUID ingressoId;
+    private UUID filmeId;
+    private int assentoNumero;
+
+    public Ingresso(UUID filmeId, int assentoNumero) {
+        this.ingressoId = UUID.randomUUID();
+        this.filmeId = filmeId;
+        this.assentoNumero = assentoNumero;
+    }
+
+    public UUID getIngressoId() { return ingressoId; }
+    public UUID getFilmeId() { return filmeId; }
+    public int getAssentoNumero() { return assentoNumero; }
+}
+
+
+
+
+
+
+
+public class FilmeRequest {
+    private String titulo;
+    private String genero;
+    private int capacidade;
+
+    public String getTitulo() { return titulo; }
+    public String getGenero() { return genero; }
+    public int getCapacidade() { return capacidade; }
+}
+
+
+
+
+
+
+
+public class AtualizarFilmeRequest {
+    private String titulo;
+    private String genero;
+    private Integer capacidade;
+
+    public String getTitulo() { return titulo; }
+    public String getGenero() { return genero; }
+    public Integer getCapacidade() { return capacidade; }
+}
+
+
+
+
+
+
+
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+@Service
+public class CinemaService {
+
+    private List<Filme> filmes = new ArrayList<>();
+
+    public List<Filme> getFilmes() {
+        return filmes;
+    }
+
+    public String criarFilme(FilmeRequest request) {
+        Filme filme = new Filme(
+                request.getTitulo(),
+                request.getGenero(),
+                request.getCapacidade()
+        );
+        filmes.add(filme);
+        return "Filme criado! ID: " + filme.getId();
+    }
+
+    public String atualizarFilme(UUID id, AtualizarFilmeRequest request) {
+        Optional<Filme> filmeOpt = buscarFilme(id);
+
+        if (filmeOpt.isEmpty()) return "Filme não encontrado!";
+
+        Filme filme = filmeOpt.get();
+
+        if (request.getTitulo() != null) filme.setTitulo(request.getTitulo());
+        if (request.getGenero() != null) filme.setGenero(request.getGenero());
+        if (request.getCapacidade() != null) filme.setCapacidade(request.getCapacidade());
+
+        return "Filme atualizado!";
+    }
+
+    public String deletarFilme(UUID id) {
+        boolean removido = filmes.removeIf(f -> f.getId().equals(id));
+        return removido ? "Filme removido!" : "Filme não encontrado!";
+    }
+
+    public String comprarIngresso(UUID filmeId) {
+        Optional<Filme> filmeOpt = buscarFilme(filmeId);
+
+        if (filmeOpt.isEmpty()) return "Filme não encontrado!";
+
+        Filme filme = filmeOpt.get();
+
+        if (filme.getAssentosOcupados() >= filme.getCapacidade()) {
+            return "Sessão lotada!";
+        }
+
+        int numeroAssento = filme.getAssentosOcupados() + 1;
+
+        Ingresso ingresso = new Ingresso(filmeId, numeroAssento);
+
+        filme.getIngressos().add(ingresso);
+        filme.incrementarAssento();
+
+        return "Ingresso comprado! ID: " + ingresso.getIngressoId() +
+                " | Assento: " + numeroAssento;
+    }
+
+    public String devolverIngresso(UUID filmeId, UUID ingressoId) {
+        Optional<Filme> filmeOpt = buscarFilme(filmeId);
+
+        if (filmeOpt.isEmpty()) return "Filme não encontrado!";
+
+        Filme filme = filmeOpt.get();
+
+        Optional<Ingresso> ingressoOpt = filme.getIngressos().stream()
+                .filter(i -> i.getIngressoId().equals(ingressoId))
+                .findFirst();
+
+        if (ingressoOpt.isEmpty()) return "Ingresso não encontrado!";
+
+        filme.getIngressos().remove(ingressoOpt.get());
+        filme.decrementarAssento();
+
+        return "Ingresso devolvido!";
+    }
+
+    private Optional<Filme> buscarFilme(UUID id) {
+        return filmes.stream()
+                .filter(f -> f.getId().equals(id))
+                .findFirst();
+    }
+}
+
+
+
+
+
+
+
+
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/filmes")
+public class CinemaController {
+
+    private final CinemaService service;
+
+    public CinemaController(CinemaService service) {
+        this.service = service;
+    }
+
+    // CRUD filmes
+    @GetMapping
+    public List<Filme> listar() {
+        return service.getFilmes();
+    }
+
+    @PostMapping
+    public String criar(@RequestBody FilmeRequest request) {
+        return service.criarFilme(request);
+    }
+
+    @PatchMapping("/{id}")
+    public String atualizar(@PathVariable UUID id,
+                            @RequestBody AtualizarFilmeRequest request) {
+        return service.atualizarFilme(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deletar(@PathVariable UUID id) {
+        return service.deletarFilme(id);
+    }
+
+    // Ingressos
+    @PostMapping("/{id}/ingressos")
+    public String comprar(@PathVariable UUID id) {
+        return service.comprarIngresso(id);
+    }
+
+    @DeleteMapping("/{id}/ingressos/{ingressoId}")
+    public String devolver(@PathVariable UUID id,
+                           @PathVariable UUID ingressoId) {
+        return service.devolverIngresso(id, ingressoId);
+    }
+}
