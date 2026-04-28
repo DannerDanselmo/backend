@@ -1,0 +1,72 @@
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/publicacoes")
+public class PublicacaoController {
+
+   
+
+    @GetMapping
+    public ResponseEntity<List<Publicacao>> listarPublicacoes() {
+        // Lógica de busca omitida
+        return ResponseEntity.ok(List.of()); // Retorna 200 OK
+    }
+
+    @PostMapping
+    public ResponseEntity<Publicacao> criarPublicacao(@RequestBody Publicacao publicacao) {
+        // Lógica de salvamento omitida
+        return ResponseEntity.status(HttpStatus.CREATED).body(publicacao); // Retorna 201 Created
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Publicacao> buscarPublicacao(@PathVariable Long id) {
+        // Lógica de busca
+        return ResponseEntity.ok(new Publicacao(id, "url", "legenda")); // Retorna 200 OK
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Publicacao> atualizarLegenda(@PathVariable Long id, @RequestBody Publicacao publicacao) {
+        // Lógica de atualização
+        return ResponseEntity.ok(publicacao); // Retorna 200 OK
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarPublicacao(@PathVariable Long id) {
+        // Lógica de exclusão
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content
+    }
+
+
+
+
+    @GetMapping("/{id}/comentarios")
+    public ResponseEntity<List<Comentario>> listarComentarios(@PathVariable("id") Long publicacaoId) {
+        return ResponseEntity.ok(List.of()); // Retorna 200 OK
+    }
+
+    @PostMapping("/{id}/comentarios")
+    public ResponseEntity<Comentario> adicionarComentario(
+            @PathVariable("id") Long publicacaoId, 
+            @RequestBody Comentario comentario) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(comentario); // Retorna 201 Created
+    }
+
+    @PutMapping("/{id}/comentarios/{comentarioId}")
+    public ResponseEntity<Comentario> atualizarComentario(
+            @PathVariable("id") Long publicacaoId, 
+            @PathVariable("comentarioId") Long comentarioId, 
+            @RequestBody Comentario comentario) {
+        return ResponseEntity.ok(comentario); // Retorna 200 OK
+    }
+
+    @DeleteMapping("/{id}/comentarios/{comentarioId}")
+    public ResponseEntity<Void> deletarComentario(
+            @PathVariable("id") Long publicacaoId, 
+            @PathVariable("comentarioId") Long comentarioId) {
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content
+    }
+}
