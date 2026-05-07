@@ -1,0 +1,234 @@
+Entidade Jogo
+package com.exemplo.games.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Jogo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String nome;
+    private String genero;
+    private Double preco;
+
+    public Jogo() {
+    }
+
+    public Jogo(Long id, String nome, String genero, Double preco) {
+        this.id = id;
+        this.nome = nome;
+        this.genero = genero;
+        this.preco = preco;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
+    }
+}
+2. DTO de Entrada — JogoRequestDTO
+
+Contém apenas os dados necessários para cadastro.
+
+package com.exemplo.games.dto;
+
+public class JogoRequestDTO {
+
+    private String nome;
+    private String genero;
+    private Double preco;
+
+    public JogoRequestDTO() {
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
+    }
+}
+3. DTO de Saída — JogoResponseDTO
+
+Contém os dados retornados ao cliente.
+
+package com.exemplo.games.dto;
+
+public class JogoResponseDTO {
+
+    private Long id;
+    private String nome;
+    private String genero;
+    private Double preco;
+
+    public JogoResponseDTO() {
+    }
+
+    public JogoResponseDTO(Long id, String nome, String genero, Double preco) {
+        this.id = id;
+        this.nome = nome;
+        this.genero = genero;
+        this.preco = preco;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
+    }
+}
+4. Repository
+package com.exemplo.games.repository;
+
+import com.exemplo.games.entity.Jogo;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface JogoRepository extends JpaRepository<Jogo, Long> {
+}
+5. Controller Atualizado
+package com.exemplo.games.controller;
+
+import com.exemplo.games.dto.JogoRequestDTO;
+import com.exemplo.games.dto.JogoResponseDTO;
+import com.exemplo.games.entity.Jogo;
+import com.exemplo.games.repository.JogoRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/jogos")
+public class JogoController {
+
+    @Autowired
+    private JogoRepository repository;
+
+    @PostMapping
+    public JogoResponseDTO cadastrar(@RequestBody JogoRequestDTO dto) {
+
+        Jogo jogo = new Jogo();
+        jogo.setNome(dto.getNome());
+        jogo.setGenero(dto.getGenero());
+        jogo.setPreco(dto.getPreco());
+
+        Jogo salvo = repository.save(jogo);
+
+        return new JogoResponseDTO(
+                salvo.getId(),
+                salvo.getNome(),
+                salvo.getGenero(),
+                salvo.getPreco()
+        );
+    }
+
+    @GetMapping
+    public List<JogoResponseDTO> listar() {
+
+        return repository.findAll()
+                .stream()
+                .map(jogo -> new JogoResponseDTO(
+                        jogo.getId(),
+                        jogo.getNome(),
+                        jogo.getGenero(),
+                        jogo.getPreco()
+                ))
+                .toList();
+    }
+
+    @GetMapping("/{id}")
+    public JogoResponseDTO buscarPorId(@PathVariable Long id) {
+
+        Jogo jogo = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Jogo não encontrado"));
+
+        return new JogoResponseDTO(
+                jogo.getId(),
+                jogo.getNome(),
+                jogo.getGenero(),
+                jogo.getPreco()
+        );
+    }
+}
+Resultado da Refatoração
+
+Agora:
+
+A entidade Jogo não é mais exposta diretamente nos endpoints.
+POST /jogos recebe JogoRequestDTO.
+GET /jogos retorna List<JogoResponseDTO>.
+GET /jogos/{id} retorna JogoResponseDTO.

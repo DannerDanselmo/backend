@@ -1,0 +1,304 @@
+1. Entidade Jogo
+package com.exemplo.games.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Jogo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String nome;
+    private String genero;
+    private Double preco;
+
+    public Jogo() {
+    }
+
+    public Jogo(Long id, String nome, String genero, Double preco) {
+        this.id = id;
+        this.nome = nome;
+        this.genero = genero;
+        this.preco = preco;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+}
+2. DTOs
+JogoRequestDTO
+package com.exemplo.games.dto;
+
+public class JogoRequestDTO {
+
+    private String nome;
+    private String genero;
+    private Double preco;
+
+    public JogoRequestDTO() {
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
+    }
+}
+JogoResponseDTO
+package com.exemplo.games.dto;
+
+public class JogoResponseDTO {
+
+    private Long id;
+    private String nome;
+    private String genero;
+    private Double preco;
+
+    public JogoResponseDTO() {
+    }
+
+    public JogoResponseDTO(Long id, String nome, String genero, Double preco) {
+        this.id = id;
+        this.nome = nome;
+        this.genero = genero;
+        this.preco = preco;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public Double getPreco() {
+        return preco;
+    }
+
+    public void setPreco(Double preco) {
+        this.preco = preco;
+    }
+}
+3. Classe Mapper — JogoMapper
+
+Responsável pela conversão entre Entity e DTO.
+
+package com.exemplo.games.mapper;
+
+import com.exemplo.games.dto.JogoRequestDTO;
+import com.exemplo.games.dto.JogoResponseDTO;
+import com.exemplo.games.entity.Jogo;
+
+public class JogoMapper {
+
+    public static Jogo toEntity(JogoRequestDTO dto) {
+
+        Jogo jogo = new Jogo();
+
+        jogo.setNome(dto.getNome());
+        jogo.setGenero(dto.getGenero());
+        jogo.setPreco(dto.getPreco());
+
+        return jogo;
+    }
+
+    public static JogoResponseDTO toDTO(Jogo jogo) {
+
+        return new JogoResponseDTO(
+                jogo.getId(),
+                jogo.getNome(),
+                jogo.getGenero(),
+                jogo.getPreco()
+        );
+    }
+}
+4. Repository
+package com.exemplo.games.repository;
+
+import com.exemplo.games.entity.Jogo;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface JogoRepository extends JpaRepository<Jogo, Long> {
+}
+5. Service
+
+Agora a conversão acontece na camada de service usando o mapper.
+
+package com.exemplo.games.service;
+
+import com.exemplo.games.dto.JogoRequestDTO;
+import com.exemplo.games.dto.JogoResponseDTO;
+import com.exemplo.games.entity.Jogo;
+import com.exemplo.games.mapper.JogoMapper;
+import com.exemplo.games.repository.JogoRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class JogoService {
+
+    @Autowired
+    private JogoRepository repository;
+
+    public JogoResponseDTO cadastrar(JogoRequestDTO dto) {
+
+        Jogo jogo = JogoMapper.toEntity(dto);
+
+        Jogo salvo = repository.save(jogo);
+
+        return JogoMapper.toDTO(salvo);
+    }
+
+    public List<JogoResponseDTO> listar() {
+
+        return repository.findAll()
+                .stream()
+                .map(JogoMapper::toDTO)
+                .toList();
+    }
+
+    public JogoResponseDTO buscarPorId(Long id) {
+
+        Jogo jogo = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Jogo não encontrado"));
+
+        return JogoMapper.toDTO(jogo);
+    }
+}
+6. Controller
+
+O controller trabalha apenas com DTOs.
+
+package com.exemplo.games.controller;
+
+import com.exemplo.games.dto.JogoRequestDTO;
+import com.exemplo.games.dto.JogoResponseDTO;
+import com.exemplo.games.service.JogoService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/jogos")
+public class JogoController {
+
+    @Autowired
+    private JogoService service;
+
+    @PostMapping
+    public JogoResponseDTO cadastrar(@RequestBody JogoRequestDTO dto) {
+        return service.cadastrar(dto);
+    }
+
+    @GetMapping
+    public List<JogoResponseDTO> listar() {
+        return service.listar();
+    }
+
+    @GetMapping("/{id}")
+    public JogoResponseDTO buscarPorId(@PathVariable Long id) {
+        return service.buscarPorId(id);
+    }
+}
+Estrutura Final do Projeto
+src/main/java/com/exemplo/games
+│
+├── controller
+│   └── JogoController.java
+│
+├── dto
+│   ├── JogoRequestDTO.java
+│   └── JogoResponseDTO.java
+│
+├── entity
+│   └── Jogo.java
+│
+├── mapper
+│   └── JogoMapper.java
+│
+├── repository
+│   └── JogoRepository.java
+│
+└── service
+    └── JogoService.java
+Resultado
+
+Agora a aplicação:
+
+Possui uma classe específica para conversão (JogoMapper)
+Faz mapping entre DTO e Entity
+Mantém o controller desacoplado da entidade
+Centraliza a lógica de conversão
+Usa DTOs em toda comunicação da API
+Usa a camada de service corretamente

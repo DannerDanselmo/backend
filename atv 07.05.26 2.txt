@@ -1,0 +1,59 @@
+Estrutura do projeto
+src └── main     ├── java     │    └── com.exemplo.jogos     │         ├── JogosApplication.java     │         ├── controller     │         │     └── JogoController.java     │         ├── entity     │         │     └── Jogo.java     │         └── repository     │               └── JogoRepository.java     └── resources           └── application.properties
+
+Dependências (pom.xml)
+<dependencies>    <!-- Spring Web -->    <dependency>        <groupId>org.springframework.boot</groupId>        <artifactId>spring-boot-starter-web</artifactId>    </dependency>    <!-- Spring Data JPA -->    <dependency>        <groupId>org.springframework.boot</groupId>        <artifactId>spring-boot-starter-data-jpa</artifactId>    </dependency>    <!-- Banco H2 -->    <dependency>        <groupId>com.h2database</groupId>        <artifactId>h2</artifactId>        <scope>runtime</scope>    </dependency></dependencies>
+
+Classe principal
+JogosApplication.java
+package com.exemplo.jogos;import org.springframework.boot.SpringApplication;import org.springframework.boot.autoconfigure.SpringBootApplication;@SpringBootApplicationpublic class JogosApplication {    public static void main(String[] args) {        SpringApplication.run(JogosApplication.class, args);    }}
+
+Entidade
+Jogo.java
+package com.exemplo.jogos.entity;import jakarta.persistence.*;@Entitypublic class Jogo {    @Id    @GeneratedValue(strategy = GenerationType.IDENTITY)    private Long id;    private String titulo;    private String estudio;    private Integer anoLancamento;    private Double preco;    public Jogo() {    }    public Jogo(Long id, String titulo, String estudio,                Integer anoLancamento, Double preco) {        this.id = id;        this.titulo = titulo;        this.estudio = estudio;        this.anoLancamento = anoLancamento;        this.preco = preco;    }    public Long getId() {        return id;    }    public void setId(Long id) {        this.id = id;    }    public String getTitulo() {        return titulo;    }    public void setTitulo(String titulo) {        this.titulo = titulo;    }    public String getEstudio() {        return estudio;    }    public void setEstudio(String estudio) {        this.estudio = estudio;    }    public Integer getAnoLancamento() {        return anoLancamento;    }    public void setAnoLancamento(Integer anoLancamento) {        this.anoLancamento = anoLancamento;    }    public Double getPreco() {        return preco;    }    public void setPreco(Double preco) {        this.preco = preco;    }}
+
+Repository
+JogoRepository.java
+package com.exemplo.jogos.repository;import com.exemplo.jogos.entity.Jogo;import org.springframework.data.jpa.repository.JpaRepository;public interface JogoRepository extends JpaRepository<Jogo, Long> {}
+
+Controller
+JogoController.java
+package com.exemplo.jogos.controller;import com.exemplo.jogos.entity.Jogo;import com.exemplo.jogos.repository.JogoRepository;import org.springframework.beans.factory.annotation.Autowired;import org.springframework.web.bind.annotation.*;import java.util.List;import java.util.Optional;@RestController@RequestMapping("/jogos")public class JogoController {    @Autowired    private JogoRepository repository;    // POST /jogos    @PostMapping    public Jogo cadastrar(@RequestBody Jogo jogo) {        return repository.save(jogo);    }    // GET /jogos    @GetMapping    public List<Jogo> listarTodos() {        return repository.findAll();    }    // GET /jogos/{id}    @GetMapping("/{id}")    public Optional<Jogo> buscarPorId(@PathVariable Long id) {        return repository.findById(id);    }}
+
+Configuração do H2
+application.properties
+# Configuração do banco H2spring.datasource.url=jdbc:h2:mem:jogosdbspring.datasource.driverClassName=org.h2.Driverspring.datasource.username=saspring.datasource.password=# Habilita console H2spring.h2.console.enabled=truespring.h2.console.path=/h2-console# Configuração JPAspring.jpa.database-platform=org.hibernate.dialect.H2Dialectspring.jpa.hibernate.ddl-auto=update# Mostrar SQL no consolespring.jpa.show-sql=true
+
+Testes dos endpoints
+1. Inserir jogo
+Requisição
+POST http://localhost:8080/jogosContent-Type: application/json
+Body
+{  "titulo": "Minecraft",  "estudio": "Mojang",  "anoLancamento": 2011,  "preco": 99.90}
+Resposta
+{  "id": 1,  "titulo": "Minecraft",  "estudio": "Mojang",  "anoLancamento": 2011,  "preco": 99.9}
+
+2. Listar jogos
+Requisição
+GET http://localhost:8080/jogos
+Resposta
+[  {    "id": 1,    "titulo": "Minecraft",    "estudio": "Mojang",    "anoLancamento": 2011,    "preco": 99.9  }]
+
+3. Buscar jogo por ID
+Requisição
+GET http://localhost:8080/jogos/1
+Resposta
+{  "id": 1,  "titulo": "Minecraft",  "estudio": "Mojang",  "anoLancamento": 2011,  "preco": 99.9}
+
+Acessando o console H2
+Após iniciar a aplicação:
+http://localhost:8080/h2-console
+Configuração:
+JDBC URL: jdbc:h2:mem:jogosdbUser Name: saPassword:
+
+Entrega esperada
+✔ Código-fonte da aplicação Spring Boot
+✔ Persistência de dados usando Spring Data JPA
+✔ Banco H2 configurado
+✔ Endpoints funcionando
+✔ Testes de inserção e consulta demonstrados acima

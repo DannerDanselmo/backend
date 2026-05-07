@@ -1,0 +1,64 @@
+catalogo.json
+{
+  "jogos": [
+    {
+      "id": 1,
+      "titulo": "The Witcher 3",
+      "estudio": "CD Projekt Red",
+      "anoLancamento": 2015,
+      "preco": 129.90,
+      "categorias": [
+        "RPG",
+        "Aventura",
+        "Mundo Aberto"
+      ]
+    },
+    {
+      "id": 2,
+      "titulo": "Minecraft",
+      "estudio": "Mojang",
+      "anoLancamento": 2011,
+      "preco": 99.90,
+      "categorias": [
+        "Sandbox",
+        "Sobrevivência"
+      ]
+    },
+    {
+      "id": 3,
+      "titulo": "FIFA 24",
+      "estudio": "EA Sports",
+      "anoLancamento": 2023,
+      "preco": 249.90,
+      "categorias": [
+        "Esporte",
+        "Futebol"
+      ]
+    }
+  ]
+}
+
+compra.json
+{
+  "id": 1001,
+  "cliente": "Carlos Silva",
+  "email": "carlos.silva@email.com",
+  "jogoId": 2,
+  "valorPago": 99.90,
+  "dataCompra": "2026-05-07"
+}
+
+Explicação dos campos
+
+
+Texto (string): titulo, estudio, cliente, email, dataCompra
+
+
+Número (number): anoLancamento, preco, valorPago
+
+
+Lista (array): categorias
+
+
+Identificador (id): id e jogoId (usados para identificar jogos e compras)
+
